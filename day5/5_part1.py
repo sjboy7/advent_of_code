@@ -1,5 +1,18 @@
+# spoilers for day 5 part 1
+
+
+
+
+
+
+
+
+
+
+
+import cProfile
+
 with open('5_input') as f:
-# with open('5_input_example') as f:
     data = f.readlines()
 
 # extract rules and updates arrays
@@ -16,26 +29,31 @@ for line in data:
     else:
         updates.append(list(map(int,line.strip().split(','))))
 
+def main():
 
-sum = 0
-# median_array=[]
+    sum = 0
 
-for update in updates:
-    valid=True
-    for rule in rules:
-        for i in range(len(update)-1):
-            if(valid==False):
+    for update in updates:
+        valid=True
+        for rule in rules:
+            for i in range(len(update)-1):
+                
+                if update[i+1]==rule[0]:
+                    for j in range(i+1):
+                        if update[j]==rule[1]:
+                            valid=False
+                            break
+            
+                if(valid==False):
+                    break
+
+            if valid==False:
                 break
+            
+        if(valid):
+            sum+=update[int(len(update)/2)]
 
-            if update[i+1]==rule[0]:
-                for j in range(i+1):
-                    if update[j]==rule[1]:
-                        valid=False
-                        break
-        
-    if(valid):
-        # median_array.append(update[int(len(update)/2)])
-        sum+=update[int(len(update)/2)]
+    print(sum)
 
-# print(median_array)
-print(sum)
+
+cProfile.run('main()')

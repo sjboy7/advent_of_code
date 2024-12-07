@@ -1,5 +1,18 @@
-# with open('5_input') as f:
-with open('5_input_example') as f:
+# spoilers for day 5 part 2
+
+
+
+
+
+
+
+
+
+
+
+import cProfile
+
+with open('5_input') as f:
     data = f.readlines()
 
 # extract rules and updates arrays
@@ -16,44 +29,38 @@ for line in data:
     else:
         updates.append(list(map(int,line.strip().split(','))))
 
+def main():
 
-sum = 0
-# median_array=[]
+    sum = 0
 
-for update in updates:
-    
-    update_valid=False
-    rule_valid=True
-    while not update_valid:
-        # print(update)
-        for rule in rules:
-            # print(rule)
-            for i in range(len(update)-1):
-                if(not rule_valid):
-                    break
-
-                if update[i+1]==rule[0]:
-                    # print(update[i+1])
-                    for j in range(i+1):
-                        # print(rule)
-                        if update[j]==rule[1]:
-                            
-                            update[i+1], update[j] = update[j], update[i+1]
-                            # print(update)
-                            rule_valid=False
-                            
-                            exit()
-                            break
-            
-            if (not rule_valid):
-                break
-        if (not rule_valid):
-            break
-        else:
+    for update in updates:
+        valid=False
+        failed=False
+        # check update, if fails then switch the failing numbers and retry until it becomes valid
+        while(valid==False):
             valid=True
-            
-        # print()
-    sum+=update[int(len(update)/2)]
+            for rule in rules:
+                for i in range(len(update)-1):
+                    if update[i+1]==rule[0]:
+                        for j in range(i+1):
+                            if update[j]==rule[1]:
+                                valid=False
+                                # set failed flag so update contributes to the final sum
+                                failed=True
+                                update[i+1], update[j] = update[j], update[i+1]
+                                break
+                    
+                    if(valid==False):
+                        break
+                
+                if valid==False:
+                    break
+                
+        if(failed):
+            sum+=update[int(len(update)/2)]
 
-# print(median_array)
-print(sum)
+    print(sum)
+
+
+cProfile.run('main()')
+                            
