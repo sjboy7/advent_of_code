@@ -6,8 +6,8 @@ import numpy as np
 regex_obstruction = r'\#'
 regex_guard = r'\^'
 
-with open('6_input_example') as f:
-# with open('6_input') as f:
+# with open('6_input_example') as f:
+with open('6_input') as f:
     data=f.readlines()
 
 # locate obstructions and guard
@@ -67,7 +67,7 @@ while(1):
 
     # check if guard has left map
     if guard[0]==0 or guard[0]>=max_x or guard[1]<=min_y or guard[1]==0:
-        print("out")
+        # print("out")
         break
     
     # check if guard hit obstruction
@@ -89,7 +89,7 @@ while(1):
     # check if loop obstruction exists
     #   > if we turn right, we'll go back onto the existing path without hitting an obstruction
 
-    print(guard*np.absolute(step[step_index]))
+    # print(guard*np.absolute(step[step_index]))
     # print(np.matmul(guard,rotation_matrix))
         
     for position in positions:
@@ -109,23 +109,31 @@ while(1):
         
             if (position[1] == (step_index+1)%4): # turning right with would set us on that path
             
-                print(f"Hit\t{position[0]}")
+                
                 separation=np.dot(position[0],np.transpose(step[position[1]]))-np.dot(guard,np.transpose(step[position[1]]))
                 # print(f"{guard}\t{position}\t{separation}")
-                print(separation)
+                # print(separation)
                 if separation<0:
+                    # print(f"Hit1\t{position[0]}")
                     continue
                 elif separation<2:
+                    # print(f"Hit2\t{position[0]}\t{separation}")
+    
                     loop_obstruction_flag=True
                     break
                 else:
+                    # print(f"Hit2\t{position[0]}\t{separation}")
+
                     for i in range(separation):
                         for obstruction in obstructions:
                             if (guard+i*step[position[1]]==obstruction).all():
-                                loop_obstruction_flag=True
                                 break
-                        if loop_obstruction_flag:
+                        else:
+                            # print(f"Hit3\t{position[0]}\t{separation}")
+                            loop_obstruction_flag=True
                             break
+                        # if loop_obstruction_flag:
+                        #     break
                 if loop_obstruction_flag:
                     break
         
@@ -151,5 +159,7 @@ while(1):
     # print()
 
 # print(len(set([positions[i][0] for i in range(len(positions))])))
-print()
-print(loop_obstructions)
+# print()
+# print(loop_obstructions)
+print(len(loop_obstructions))
+print(len(np.unique(loop_obstructions,axis=1)))
