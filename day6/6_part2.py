@@ -2,7 +2,6 @@
 import re
 import numpy as np
 
-
 regex_obstruction = r'\#'
 regex_guard = r'\^'
 
@@ -12,154 +11,61 @@ with open('6_input') as f:
 
 # locate obstructions and guard
 obstructions=[]
-guard=None
+guard_start=None
 for row_index,line in enumerate(data):
     if re.search(regex_obstruction,line):
         obstruction_cols = re.finditer(regex_obstruction,line)
         for obstruction_col in obstruction_cols:
-            obstructions.append(np.array([obstruction_col.start()+1,-row_index-1]))
-            # obstructions.append(complex(obstruction_col.start(),-row_index))
-    if not np.any(guard):
+            obstructions.append(complex(obstruction_col.start(),-row_index))
+    if not guard_start:
         if re.search(regex_guard,line):
             guard_col = re.finditer(regex_guard,line)
-            # guard=complex(list(guard_col)[0].start(),-row_index)
-            guard=np.array([list(guard_col)[0].start()+1,-row_index-1])
+            guard_start=complex(list(guard_col)[0].start(),-row_index)
         
-max_x=len(data)+1
-min_y=len(data[0].strip())*-1
-# print(max_x)
-# print(min_y)
-
-step = np.array([[0,1],
-                 [1,0],
-                 [0,-1],
-                 [-1,0]])
-# print(step[0])
-# print(step[0]+step[1])
-# print(np.dot(step[0],np.transpose(step[1])))
-# exit()
-
-step_index=0
-step_count=0
-rotation_matrix=np.array([[0,1],[-1,0]])
-positions=[]
-# print(positions)
-# exit()
-
-positions.append([guard,step_index])
-# print(positions)
+max_real=len(data)
+min_imag=len(data[0].strip())*-1
 # print(obstructions)
-# exit()
-loop_obstructions=[]
 
-while(1):
-    # print(guard)
-    # exit()
-    print(f"{guard}\t{step[step_index]}")
-    # print(guard*step[step_index])
-    
-    
-    # print(positions[-1])
-    hit_obstruction_flag=False
-    loop_obstruction_flag=False
-    guard_next=guard+step[step_index]
-    # print(guard_next)
 
-    # check if guard has left map
-    if guard[0]==0 or guard[0]>=max_x or guard[1]<=min_y or guard[1]==0:
-        # print("out")
-        break
-    
-    # check if guard hit obstruction
-    for obstruction in obstructions:
-        # print(obstruction)
-        # exit()
-        if (guard_next==obstruction).all():
-        # if (guard_next==obstruction):
+step = [complex(0,1),
+        complex(1,0),
+        complex(0,-1),
+        complex(-1,0),
+        ]
+def walk(obstructions,guard):
 
-            hit_obstruction_flag=True
-            step_index=(step_index+1)%4
-            print()
-            break
-        # exit()
-
-    if hit_obstruction_flag:
-        continue
-    
-    # check if loop obstruction exists
-    #   > if we turn right, we'll go back onto the existing path without hitting an obstruction
-
-    # print(guard*np.absolute(step[step_index]))
-    # print(np.matmul(guard,rotation_matrix))
+    step_index=0
+    positions=[]
+    positions.append([guard, step_index])
+    while(1):
         
-    for position in positions:
-        # print(position[0].imag)
-        # print(position[0].real)
-        # separation_vector=position[0]-guard
-        
-        # print(position)
-        # print(np.dot(guard,np.transpose(step[position[1]])))
-        # print(separation_vector)
-        # print(separation_vector)
-        # exit()
-        # if position[0][0]==guard[0] or position[0][1]==guard[1]: # guard is aligned with position in x or y
-        # if (position[1] == (step_index+1)%4): # turning right with would set us on that path
-        if (guard*np.absolute(step[step_index])==position[0]).any():
-        # if (np.matmul(guard,rotation_matrix)==position[0]).any():
-        
-            if (position[1] == (step_index+1)%4): # turning right with would set us on that path
+        guard_next=guard+step[step_index]
+        for obstruction in obstructions:
+            if guard_next==obstruction:
+                step_index=(step_index+1)%4
+                break
+        else:
             
-                
-                separation=np.dot(position[0],np.transpose(step[position[1]]))-np.dot(guard,np.transpose(step[position[1]]))
-                # print(f"{guard}\t{position}\t{separation}")
-                # print(separation)
-                if separation<0:
-                    # print(f"Hit1\t{position[0]}")
-                    continue
-                elif separation<2:
-                    # print(f"Hit2\t{position[0]}\t{separation}")
-    
-                    loop_obstruction_flag=True
-                    break
-                else:
-                    # print(f"Hit2\t{position[0]}\t{separation}")
-
-                    for i in range(separation):
-                        for obstruction in obstructions:
-                            if (guard+i*step[position[1]]==obstruction).all():
-                                break
-                        else:
-                            # print(f"Hit3\t{position[0]}\t{separation}")
-                            loop_obstruction_flag=True
-                            break
-                        # if loop_obstruction_flag:
-                        #     break
-                if loop_obstruction_flag:
-                    break
+            guard=guard_next
+            if guard.real<0 or guard.real>=max_real or guard.imag>0 or guard.imag<=min_imag:
+                return positions # we made it out
+            positions.append([guard, step_index])
+        if [guard,step_index] in positions[:-1]:
+            return 0 # we're in a loop
         
-    if loop_obstruction_flag:
-        loop_obstructions.append(guard_next)
         
-    #             if any([obstruction.imag == i for i in range(position.imag-guard.imag)]):
+        
+loop_obstructions=[]
+positions=walk(obstructions,guard_start)
+test_obstructions=[]
 
-
-
-
-    #     if position==[guard,(step_index+1)%4]:
-    #         print("HIT")
-    #         loop_obstructions.append(guard_next)
-    #         break
-    #     elif         # real component matches guard real and no obstructions between guard and position
-    #     elif # same but imag component
+unique_positions=set(list(positions[i][0] for i in range(len(positions))))
+# print(len(unique_positions))
+for index, loop_obstruction in enumerate(unique_positions):
+    test_obstructions=obstructions.copy()
+    test_obstructions.append(loop_obstruction)
+    if not(walk(test_obstructions,guard_start)):
+        loop_obstructions.append(loop_obstruction)
+        # print(f"{index}\t{len(loop_obstructions)}")
     
-
-    guard=guard_next
-    positions.append([guard,step_index])
-    # print(positions)
-    # print()
-
-# print(len(set([positions[i][0] for i in range(len(positions))])))
-# print()
-# print(loop_obstructions)
 print(len(loop_obstructions))
-print(len(np.unique(loop_obstructions,axis=1)))
