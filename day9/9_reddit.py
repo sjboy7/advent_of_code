@@ -1,16 +1,38 @@
+from collections import deque
+
 with open('9_input') as f:
-    rawinput = f.read()[:50]
+    rawinput = f.read()
 
 lengths = [int(num) for num in rawinput]
 
-grid = [i//2 if i%2==0 else -1 for i,num in enumerate(lengths) for _ in range(num)]
+filled_grid = deque()
+moved_grid = deque()
+gaps = deque()
 
-while -1 in grid:
-    if grid[-1] == (-1):
-        grid.pop()
+cur_pos = 0
+for i,num in enumerate(lengths):
+    if i%2 == 0:
+        filled_grid.append([i//2,cur_pos,num])
     else:
-        index = grid.index(-1)
-        grid[index] = grid.pop()
-print(grid)
-# answer = sum(i*num for i,num in enumerate(grid))
-# print(answer)
+        if num > 0:
+            gaps.append([cur_pos,num])
+    cur_pos += num
+
+while True:
+    gap_pos,gap_len = gaps.popleft()
+    file_id,file_pos,file_len = filled_grid.pop()
+    if gap_pos > file_pos:
+        filled_grid.append([file_id,file_pos,file_len])
+        break
+    if gap_len > file_len:
+        moved_grid.append([file_id,gap_pos,file_len])
+        gaps.appendleft([gap_pos+file_len,gap_len-file_len])
+    elif gap_len == file_len:
+        moved_grid.append([file_id,gap_pos,file_len])
+    else:
+        moved_grid.append([file_id,gap_pos,gap_len])
+        filled_grid.append([file_id,file_pos,file_len-gap_len])
+    
+final_grid = filled_grid + moved_grid
+answer = sum(num*(start*length+(length*(length-1))//2) for num,start,length in final_grid) # (start) + (start+1) + ... + (start+length-1)
+print(answer)
