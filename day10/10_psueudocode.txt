@@ -1,0 +1,24 @@
+Def check step(node)
+
+Del unchecked(node)
+
+  If in existing paths
+      Trailheads(base node)[sum]+=1
+     Return 1 (end recursion)
+  If in dead ends
+      Return 0 (end recursion)
+  Else
+      Test points = [...]
+      Next val = node(val) +1
+      Path good = False
+       For test point in test points:
+           If test point val == next val
+               If Check step (test point):
+                  Existing paths.append (node)
+                  Path good=true
+               Else 
+                   Dead ends append(node)
+    If path good
+       Return 1
+     Else 
+       Return 0
